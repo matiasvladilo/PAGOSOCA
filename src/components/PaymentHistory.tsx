@@ -75,6 +75,7 @@ export default function PaymentHistory() {
           <option value="paid">Pagado</option>
           <option value="failed">Fallido</option>
           <option value="expired">Expirado</option>
+          <option value="cancelled">Cancelado</option>
         </select>
 
         <button className="btn-refresh" onClick={fetchPayments} title="Actualizar">
