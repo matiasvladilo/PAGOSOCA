@@ -15,8 +15,11 @@ export const handler: Handler = async (event) => {
   }
 
   try {
-    const startOfDay = new Date();
-    startOfDay.setHours(0, 0, 0, 0);
+    // Chile is UTC-4 (standard) / UTC-3 (summer). Use UTC-4 as conservative offset.
+    const now = new Date();
+    const chileOffsetMs = 4 * 60 * 60 * 1000;
+    const chileNow = new Date(now.getTime() - chileOffsetMs);
+    const startOfDay = new Date(Date.UTC(chileNow.getUTCFullYear(), chileNow.getUTCMonth(), chileNow.getUTCDate()) + chileOffsetMs);
 
     const { data, error } = await supabase
       .from('payments')

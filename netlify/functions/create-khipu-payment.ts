@@ -64,7 +64,7 @@ export const handler: Handler = async (event) => {
       notifyUrl,
     });
 
-    await supabase
+    const { error: updateError } = await supabase
       .from('payments')
       .update({
         provider_payment_id: khipu.payment_id,
@@ -72,6 +72,10 @@ export const handler: Handler = async (event) => {
         raw_create_response: khipu,
       })
       .eq('id', payment.id);
+
+    if (updateError) {
+      throw new Error(`Failed to update payment with Khipu data: ${updateError.message}`);
+    }
 
     return {
       statusCode: 200,
