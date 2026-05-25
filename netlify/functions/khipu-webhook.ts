@@ -88,6 +88,11 @@ export const handler: Handler = async (event) => {
       return { statusCode: 200, body: 'ok' };
     }
 
+    if (internalStatus === 'paid' && khipuStatus.amount !== payment.amount_charged) {
+      console.error(`Amount mismatch for payment ${payment.id}: expected ${payment.amount_charged}, got ${khipuStatus.amount}`);
+      return { statusCode: 200, body: 'ok' };
+    }
+
     const updateData: Record<string, unknown> = { status: internalStatus };
     if (internalStatus === 'paid') {
       updateData.paid_at = new Date().toISOString();
