@@ -22,7 +22,9 @@ async function refreshPendingPayment(payment: {
 }): Promise<string> {
   try {
     const khipu = await getKhipuPaymentStatus(payment.provider_payment_id);
-    const newStatus = KHIPU_TO_INTERNAL[khipu.status];
+    const isExpired = khipu.expires_date && new Date(khipu.expires_date) < new Date();
+    const effectiveStatus = (khipu.status === 'pending' && isExpired) ? 'expired' : khipu.status;
+    const newStatus = KHIPU_TO_INTERNAL[effectiveStatus];
     if (!newStatus) return 'pending';
 
     if (newStatus === 'paid' && Number(khipu.amount) !== payment.amount_charged) return 'pending';

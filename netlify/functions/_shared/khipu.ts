@@ -51,11 +51,12 @@ export async function createKhipuPayment(
 
 export interface KhipuPaymentStatus {
   payment_id: string;
-  status: string; // 'pending' | 'verifying' | 'done' | 'expired' | 'failed'
+  status: string; // 'pending' | 'verifying' | 'done' | 'expired' | 'failed' | 'cancelled'
   status_detail: string;
   amount: number;
   currency: string;
   transaction_id: string;
+  expires_date?: string;
 }
 
 export async function getKhipuPaymentStatus(

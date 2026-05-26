@@ -49,7 +49,9 @@ export const handler: Handler = async (event) => {
     }
 
     const khipuStatus = await getKhipuPaymentStatus(payment.provider_payment_id);
-    const internalStatus = KHIPU_TO_INTERNAL[khipuStatus.status] ?? payment.status;
+    const isExpired = khipuStatus.expires_date && new Date(khipuStatus.expires_date) < new Date();
+    const effectiveKhipuStatus = (khipuStatus.status === 'pending' && isExpired) ? 'expired' : khipuStatus.status;
+    const internalStatus = KHIPU_TO_INTERNAL[effectiveKhipuStatus] ?? payment.status;
 
     if (internalStatus !== payment.status) {
       if (internalStatus === 'paid' && khipuStatus.amount !== payment.amount_charged) {
