@@ -13,7 +13,6 @@ type Phase = 'form' | 'waiting' | 'result';
 
 export default function NewPayment() {
   const [branch, setBranch] = useState<Branch>('PV');
-  const [cashier, setCashier] = useState('');
   const [saleInput, setSaleInput] = useState('');
   const [phase, setPhase] = useState<Phase>('form');
   const [payment, setPayment] = useState<Payment | null>(null);
@@ -36,7 +35,7 @@ export default function NewPayment() {
       const res = await fetch('/.netlify/functions/create-khipu-payment', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ sale_amount: saleAmount, branch, cashier }),
+        body: JSON.stringify({ sale_amount: saleAmount, branch }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? 'Error al generar el cobro');
@@ -91,25 +90,13 @@ export default function NewPayment() {
 
   return (
     <div>
-      <div className="form-row-2">
-        <div className="form-group">
-          <label htmlFor="branch">Sucursal</label>
-          <select id="branch" value={branch} onChange={(e) => setBranch(e.target.value as Branch)}>
-            {BRANCHES.map((b) => (
-              <option key={b} value={b}>{b}</option>
-            ))}
-          </select>
-        </div>
-        <div className="form-group">
-          <label htmlFor="cashier">Cajero</label>
-          <input
-            id="cashier"
-            type="text"
-            value={cashier}
-            onChange={(e) => setCashier(e.target.value)}
-            placeholder="Tu nombre"
-          />
-        </div>
+      <div className="form-group">
+        <label htmlFor="branch">Sucursal</label>
+        <select id="branch" value={branch} onChange={(e) => setBranch(e.target.value as Branch)}>
+          {BRANCHES.map((b) => (
+            <option key={b} value={b}>{b}</option>
+          ))}
+        </select>
       </div>
 
       <div className="form-group">
