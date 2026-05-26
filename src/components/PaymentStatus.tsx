@@ -17,7 +17,11 @@ export default function PaymentStatus({ payment, onComplete }: Props) {
   useEffect(() => {
     intervalRef.current = setInterval(async () => {
       try {
-        const res = await fetch(`/.netlify/functions/payment-status?id=${payment.payment_id}`);
+        const res = await fetch('/.netlify/functions/refresh-khipu-payment-status', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ payment_id: payment.payment_id }),
+        });
         if (!res.ok) return;
         const data = await res.json();
         if (TERMINAL.includes(data.status)) {
@@ -27,7 +31,7 @@ export default function PaymentStatus({ payment, onComplete }: Props) {
       } catch {
         // Keep polling silently
       }
-    }, 2000);
+    }, 5000);
 
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current);
