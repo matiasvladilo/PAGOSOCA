@@ -65,10 +65,12 @@ export const handler: Handler = async (event) => {
       notifyUrl,
     });
 
+    const paymentUrl = khipu.simplified_transfer_url || khipu.payment_url;
+
     await sql`
       UPDATE payments
       SET provider_payment_id = ${khipu.payment_id},
-          payment_url = ${khipu.payment_url},
+          payment_url = ${paymentUrl},
           raw_create_response = ${JSON.stringify(khipu)}::jsonb
       WHERE id = ${payment.id}
     `;
@@ -81,7 +83,7 @@ export const handler: Handler = async (event) => {
         sale_amount,
         customer_fee,
         amount_charged,
-        payment_url: khipu.payment_url,
+        payment_url: paymentUrl,
       }),
     };
   } catch (err) {
