@@ -92,7 +92,7 @@ export default function NewPayment() {
     <div>
       <div className="form-group">
         <label htmlFor="branch">Sucursal</label>
-        <select id="branch" value={branch} onChange={(e) => setBranch(e.target.value as Branch)}>
+        <select id="branch" className="select-branch" value={branch} onChange={(e) => setBranch(e.target.value as Branch)}>
           {BRANCHES.map((b) => (
             <option key={b} value={b}>{b}</option>
           ))}
