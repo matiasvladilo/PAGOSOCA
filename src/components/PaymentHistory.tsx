@@ -33,17 +33,14 @@ export default function PaymentHistory() {
   const [branchFilter, setBranchFilter] = useState('all');
   const [statusFilter, setStatusFilter] = useState('all');
 
-  useEffect(() => {
-    fetchPayments();
-  }, []);
+  useEffect(() => { fetchPayments(); }, []);
 
   async function fetchPayments() {
     setLoading(true);
     try {
       const res = await fetch('/.netlify/functions/list-payments');
-      if (!res.ok) throw new Error('Error al cargar historial');
-      const data = await res.json();
-      setPayments(data as HistoryPayment[]);
+      if (!res.ok) throw new Error();
+      setPayments(await res.json() as HistoryPayment[]);
     } catch {
       setPayments([]);
     } finally {
@@ -58,7 +55,7 @@ export default function PaymentHistory() {
   });
 
   if (loading) {
-    return <p style={{ color: '#6b7280', marginTop: '1rem' }}>Cargando historial...</p>;
+    return <p className="history-loading">Cargando historial...</p>;
   }
 
   return (
@@ -68,7 +65,6 @@ export default function PaymentHistory() {
           <option value="all">Todas las sucursales</option>
           {BRANCHES.map((b) => <option key={b} value={b}>{b}</option>)}
         </select>
-
         <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
           <option value="all">Todos los estados</option>
           <option value="pending">Pendiente</option>
@@ -77,44 +73,27 @@ export default function PaymentHistory() {
           <option value="expired">Expirado</option>
           <option value="cancelled">Cancelado</option>
         </select>
-
-        <button className="btn-refresh" onClick={fetchPayments} title="Actualizar">
-          🔄 Actualizar
-        </button>
+        <button className="btn-refresh" onClick={fetchPayments}>🔄</button>
       </div>
 
       {filtered.length === 0 ? (
         <p className="history-empty">No hay pagos registrados hoy.</p>
       ) : (
-        <div className="history-scroll">
-          <table className="history-table">
-            <thead>
-              <tr>
-                <th>Hora</th>
-                <th>Sucursal</th>
-                <th>Venta</th>
-                <th>Comisión</th>
-                <th>Total</th>
-                <th>Estado</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filtered.map((p) => (
-                <tr key={p.id}>
-                  <td>{formatTime(p.created_at)}</td>
-                  <td>{p.branch}</td>
-                  <td>{formatCLP(p.sale_amount)}</td>
-                  <td>{formatCLP(p.customer_fee)}</td>
-                  <td>{formatCLP(p.amount_charged)}</td>
-                  <td>
-                    <span className={STATUS_CLASS[p.status]}>
-                      {STATUS_LABELS[p.status]}
-                    </span>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+        <div className="history-list">
+          {filtered.map((p) => (
+            <div key={p.id} className={`payment-card payment-card--${p.status}`}>
+              <div className="payment-card-header">
+                <span className="payment-card-meta">{formatTime(p.created_at)} · {p.branch}</span>
+                <span className={STATUS_CLASS[p.status]}>{STATUS_LABELS[p.status]}</span>
+              </div>
+              <div className="payment-card-amounts">
+                <div className="payment-card-total">{formatCLP(p.amount_charged)}</div>
+                <div className="payment-card-detail">
+                  Venta {formatCLP(p.sale_amount)} + comisión {formatCLP(p.customer_fee)}
+                </div>
+              </div>
+            </div>
+          ))}
         </div>
       )}
     </div>
