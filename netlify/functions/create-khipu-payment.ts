@@ -53,9 +53,9 @@ export const handler: Handler = async (event) => {
     }
 
     const baseUrl = process.env.KHIPU_NOTIFICATION_URL ?? process.env.APP_BASE_URL ?? '';
-    const notifyUrl = baseUrl.startsWith('http://localhost')
-      ? undefined
-      : `${baseUrl}/.netlify/functions/khipu-webhook`;
+    const notifyUrl = baseUrl.startsWith('https://')
+      ? `${baseUrl}/.netlify/functions/khipu-webhook`
+      : undefined;
 
     const khipu = await createKhipuPayment({
       subject: `Pago en tienda - ${branch}`,
