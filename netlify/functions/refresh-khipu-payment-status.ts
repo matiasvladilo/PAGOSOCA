@@ -11,6 +11,8 @@ const KHIPU_TO_INTERNAL: Record<string, string> = {
   done: 'paid',
   expired: 'expired',
   failed: 'failed',
+  cancelled: 'cancelled',
+  rejected: 'cancelled',
 };
 
 export const handler: Handler = async (event) => {

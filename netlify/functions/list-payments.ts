@@ -11,6 +11,8 @@ const KHIPU_TO_INTERNAL: Record<string, string> = {
   done: 'paid',
   expired: 'expired',
   failed: 'failed',
+  cancelled: 'cancelled',
+  rejected: 'cancelled',
 };
 
 async function refreshPendingPayment(payment: {
@@ -27,7 +29,7 @@ async function refreshPendingPayment(payment: {
 
     if (newStatus === 'paid') {
       await sql`UPDATE payments SET status = 'paid', paid_at = now() WHERE id = ${payment.id}`;
-    } else {
+    } else if (newStatus !== 'pending') {
       await sql`UPDATE payments SET status = ${newStatus} WHERE id = ${payment.id}`;
     }
     return newStatus;

@@ -92,7 +92,6 @@ export default function PaymentHistory() {
               <tr>
                 <th>Hora</th>
                 <th>Sucursal</th>
-                <th>Cajero</th>
                 <th>Venta</th>
                 <th>Comisión</th>
                 <th>Total</th>
@@ -104,7 +103,6 @@ export default function PaymentHistory() {
                 <tr key={p.id}>
                   <td>{formatTime(p.created_at)}</td>
                   <td>{p.branch}</td>
-                  <td>{p.cashier ?? '—'}</td>
                   <td>{formatCLP(p.sale_amount)}</td>
                   <td>{formatCLP(p.customer_fee)}</td>
                   <td>{formatCLP(p.amount_charged)}</td>
