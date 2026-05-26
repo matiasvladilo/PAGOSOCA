@@ -91,52 +91,59 @@ export default function NewPayment() {
 
   return (
     <div>
-      <div className="form-group">
-        <label htmlFor="branch">Sucursal</label>
-        <select id="branch" value={branch} onChange={(e) => setBranch(e.target.value as Branch)}>
-          {BRANCHES.map((b) => (
-            <option key={b} value={b}>{b}</option>
-          ))}
-        </select>
+      <div className="form-row-2">
+        <div className="form-group">
+          <label htmlFor="branch">Sucursal</label>
+          <select id="branch" value={branch} onChange={(e) => setBranch(e.target.value as Branch)}>
+            {BRANCHES.map((b) => (
+              <option key={b} value={b}>{b}</option>
+            ))}
+          </select>
+        </div>
+        <div className="form-group">
+          <label htmlFor="cashier">Cajero</label>
+          <input
+            id="cashier"
+            type="text"
+            value={cashier}
+            onChange={(e) => setCashier(e.target.value)}
+            placeholder="Tu nombre"
+          />
+        </div>
       </div>
 
       <div className="form-group">
-        <label htmlFor="cashier">Cajero</label>
-        <input
-          id="cashier"
-          type="text"
-          value={cashier}
-          onChange={(e) => setCashier(e.target.value)}
-          placeholder="Nombre del cajero"
-        />
+        <label htmlFor="sale">Monto de venta</label>
+        <div className="amount-input-wrapper">
+          <span className="amount-prefix">$</span>
+          <input
+            id="sale"
+            className="amount-input"
+            type="text"
+            inputMode="numeric"
+            value={saleInput}
+            onChange={(e) => setSaleInput(e.target.value)}
+            placeholder="0"
+          />
+        </div>
       </div>
 
-      <div className="form-group">
-        <label htmlFor="sale">Monto venta</label>
-        <input
-          id="sale"
-          type="text"
-          inputMode="numeric"
-          value={saleInput}
-          onChange={(e) => setSaleInput(e.target.value)}
-          placeholder="Ej: 5000"
-        />
-      </div>
-
-      <div className="fee-summary">
-        <div className="fee-row">
-          <span>Monto venta</span>
-          <span>{formatCLP(saleAmount)}</span>
+      {saleAmount > 0 && (
+        <div className="fee-summary">
+          <div className="fee-row">
+            <span>Monto venta</span>
+            <span>{formatCLP(saleAmount)}</span>
+          </div>
+          <div className="fee-row">
+            <span>Cargo transferencia</span>
+            <span>{formatCLP(customerFee)}</span>
+          </div>
+          <div className="fee-row fee-row--total">
+            <span>Total a cobrar al cliente</span>
+            <span>{formatCLP(grossAmount)}</span>
+          </div>
         </div>
-        <div className="fee-row">
-          <span>Cargo pago automático</span>
-          <span>{formatCLP(customerFee)}</span>
-        </div>
-        <div className="fee-row fee-row--total">
-          <span>Total a cobrar</span>
-          <span>{formatCLP(grossAmount)}</span>
-        </div>
-      </div>
+      )}
 
       {error && <p className="error-msg">{error}</p>}
 
@@ -145,7 +152,7 @@ export default function NewPayment() {
         onClick={handleGenerate}
         disabled={loading || saleAmount <= 0}
       >
-        {loading ? 'Generando...' : 'Generar QR Khipu'}
+        {loading ? 'Generando...' : 'Generar QR de pago'}
       </button>
     </div>
   );

@@ -11,9 +11,15 @@ export default function App() {
   return (
     <div className="app">
       <header className="app-header">
-        <h1>Cobro por transferencia automática</h1>
+        <div className="app-header-brand">
+          <span className="app-header-logo">⚡</span>
+          <div>
+            <h1>PAGOSOCA</h1>
+            <span className="app-header-subtitle">Cobros automáticos por transferencia</span>
+          </div>
+        </div>
         <div className="warning-banner">
-          ⚠️ Solo entregar producto cuando el pago esté aprobado.
+          ⚠️ Solo entregar producto cuando el pago esté aprobado
         </div>
       </header>
 
