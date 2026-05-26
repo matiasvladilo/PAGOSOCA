@@ -9,7 +9,7 @@ export interface CreatePaymentParams {
   amount: number;
   currency: string;
   transactionId: string;
-  notifyUrl: string;
+  notifyUrl?: string;
 }
 
 export interface KhipuPaymentCreated {
@@ -37,7 +37,7 @@ export async function createKhipuPayment(
       currency: params.currency,
       amount: params.amount,
       transaction_id: params.transactionId,
-      notify_url: params.notifyUrl,
+      ...(params.notifyUrl ? { notify_url: params.notifyUrl } : {}),
     }),
   });
 

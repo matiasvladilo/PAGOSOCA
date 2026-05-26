@@ -52,9 +52,10 @@ export const handler: Handler = async (event) => {
       throw new Error('Failed to insert payment record');
     }
 
-    const notifyUrl =
-      process.env.KHIPU_NOTIFICATION_URL ??
-      `${process.env.APP_BASE_URL}/.netlify/functions/khipu-webhook`;
+    const baseUrl = process.env.KHIPU_NOTIFICATION_URL ?? process.env.APP_BASE_URL ?? '';
+    const notifyUrl = baseUrl.startsWith('http://localhost')
+      ? undefined
+      : `${baseUrl}/.netlify/functions/khipu-webhook`;
 
     const khipu = await createKhipuPayment({
       subject: `Pago en tienda - ${branch}`,
