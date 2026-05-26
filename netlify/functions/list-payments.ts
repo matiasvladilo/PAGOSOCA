@@ -1,5 +1,5 @@
 import type { Handler } from '@netlify/functions';
-import { supabase } from './_shared/supabase.js';
+import { sql } from './_shared/db.js';
 
 const CORS_HEADERS = {
   'Content-Type': 'application/json',
@@ -21,15 +21,14 @@ export const handler: Handler = async (event) => {
     const chileNow = new Date(now.getTime() - chileOffsetMs);
     const startOfDay = new Date(Date.UTC(chileNow.getUTCFullYear(), chileNow.getUTCMonth(), chileNow.getUTCDate()) + chileOffsetMs);
 
-    const { data, error } = await supabase
-      .from('payments')
-      .select('id, created_at, branch, cashier, sale_amount, customer_fee, amount_charged, status, paid_at')
-      .gte('created_at', startOfDay.toISOString())
-      .order('created_at', { ascending: false });
+    const rows = await sql`
+      SELECT id, created_at, branch, cashier, sale_amount, customer_fee, amount_charged, status, paid_at
+      FROM payments
+      WHERE created_at >= ${startOfDay.toISOString()}
+      ORDER BY created_at DESC
+    `;
 
-    if (error) throw error;
-
-    return { statusCode: 200, headers: CORS_HEADERS, body: JSON.stringify(data ?? []) };
+    return { statusCode: 200, headers: CORS_HEADERS, body: JSON.stringify(rows) };
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Error desconocido';
     return { statusCode: 500, headers: CORS_HEADERS, body: JSON.stringify({ error: message }) };

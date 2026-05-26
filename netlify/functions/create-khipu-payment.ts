@@ -1,5 +1,5 @@
 import type { Handler } from '@netlify/functions';
-import { supabase } from './_shared/supabase.js';
+import { sql } from './_shared/db.js';
 import { calculateKhipuGrossAmount, calculateCustomerFee } from './_shared/fee.js';
 import { createKhipuPayment } from './_shared/khipu.js';
 
@@ -41,15 +41,15 @@ export const handler: Handler = async (event) => {
     const amount_charged = calculateKhipuGrossAmount(sale_amount);
     const customer_fee = calculateCustomerFee(sale_amount);
 
-    // Create pending record
-    const { data: payment, error: insertError } = await supabase
-      .from('payments')
-      .insert({ sale_amount, customer_fee, amount_charged, branch, cashier: cashier ?? null })
-      .select()
-      .single();
+    const rows = await sql`
+      INSERT INTO payments (sale_amount, customer_fee, amount_charged, branch, cashier)
+      VALUES (${sale_amount}, ${customer_fee}, ${amount_charged}, ${branch}, ${cashier ?? null})
+      RETURNING *
+    `;
+    const payment = rows[0] as { id: string };
 
-    if (insertError || !payment) {
-      throw new Error(`Supabase error: ${insertError?.message}`);
+    if (!payment) {
+      throw new Error('Failed to insert payment record');
     }
 
     const notifyUrl =
@@ -64,18 +64,13 @@ export const handler: Handler = async (event) => {
       notifyUrl,
     });
 
-    const { error: updateError } = await supabase
-      .from('payments')
-      .update({
-        provider_payment_id: khipu.payment_id,
-        payment_url: khipu.payment_url,
-        raw_create_response: khipu,
-      })
-      .eq('id', payment.id);
-
-    if (updateError) {
-      throw new Error(`Failed to update payment with Khipu data: ${updateError.message}`);
-    }
+    await sql`
+      UPDATE payments
+      SET provider_payment_id = ${khipu.payment_id},
+          payment_url = ${khipu.payment_url},
+          raw_create_response = ${JSON.stringify(khipu)}::jsonb
+      WHERE id = ${payment.id}
+    `;
 
     return {
       statusCode: 200,

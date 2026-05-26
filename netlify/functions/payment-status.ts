@@ -1,5 +1,5 @@
 import type { Handler } from '@netlify/functions';
-import { supabase } from './_shared/supabase.js';
+import { sql } from './_shared/db.js';
 
 const CORS_HEADERS = {
   'Content-Type': 'application/json',
@@ -14,23 +14,25 @@ export const handler: Handler = async (event) => {
     return { statusCode: 405, headers: CORS_HEADERS, body: JSON.stringify({ error: 'Method not allowed' }) };
   }
 
-  const id = event.queryStringParameters?.id;
-  if (!id) {
-    return { statusCode: 400, headers: CORS_HEADERS, body: JSON.stringify({ error: 'Falta parámetro id' }) };
-  }
-
   try {
-    const { data, error } = await supabase
-      .from('payments')
-      .select('id, status, sale_amount, customer_fee, amount_charged, paid_at')
-      .eq('id', id)
-      .single();
+    const id = event.queryStringParameters?.id;
 
-    if (error || !data) {
+    if (!id) {
+      return { statusCode: 400, headers: CORS_HEADERS, body: JSON.stringify({ error: 'Falta id' }) };
+    }
+
+    const rows = await sql`
+      SELECT id, status, sale_amount, customer_fee, amount_charged, paid_at
+      FROM payments
+      WHERE id = ${id}
+    `;
+    const payment = rows[0];
+
+    if (!payment) {
       return { statusCode: 404, headers: CORS_HEADERS, body: JSON.stringify({ error: 'Pago no encontrado' }) };
     }
 
-    return { statusCode: 200, headers: CORS_HEADERS, body: JSON.stringify(data) };
+    return { statusCode: 200, headers: CORS_HEADERS, body: JSON.stringify(payment) };
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Error desconocido';
     return { statusCode: 500, headers: CORS_HEADERS, body: JSON.stringify({ error: message }) };

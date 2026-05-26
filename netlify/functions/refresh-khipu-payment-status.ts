@@ -1,5 +1,5 @@
 import type { Handler } from '@netlify/functions';
-import { supabase } from './_shared/supabase.js';
+import { sql } from './_shared/db.js';
 import { getKhipuPaymentStatus } from './_shared/khipu.js';
 
 const CORS_HEADERS = {
@@ -28,13 +28,17 @@ export const handler: Handler = async (event) => {
       return { statusCode: 400, headers: CORS_HEADERS, body: JSON.stringify({ error: 'Falta payment_id' }) };
     }
 
-    const { data: payment, error } = await supabase
-      .from('payments')
-      .select('id, status, provider_payment_id, sale_amount, customer_fee, amount_charged, paid_at')
-      .eq('id', payment_id)
-      .single();
+    const rows = await sql`
+      SELECT id, status, provider_payment_id, sale_amount, customer_fee, amount_charged, paid_at
+      FROM payments
+      WHERE id = ${payment_id}
+    `;
+    const payment = rows[0] as {
+      id: string; status: string; provider_payment_id: string | null;
+      sale_amount: number; customer_fee: number; amount_charged: number; paid_at: string | null;
+    } | undefined;
 
-    if (error || !payment) {
+    if (!payment) {
       return { statusCode: 404, headers: CORS_HEADERS, body: JSON.stringify({ error: 'Pago no encontrado' }) };
     }
 
@@ -51,15 +55,21 @@ export const handler: Handler = async (event) => {
         return { statusCode: 200, headers: CORS_HEADERS, body: JSON.stringify(payment) };
       }
 
-      const updateData: Record<string, unknown> = { status: internalStatus };
-      if (internalStatus === 'paid') updateData.paid_at = new Date().toISOString();
+      if (internalStatus === 'paid') {
+        const paidAt = new Date().toISOString();
+        await sql`UPDATE payments SET status = ${internalStatus}, paid_at = now() WHERE id = ${payment.id}`;
+        return {
+          statusCode: 200,
+          headers: CORS_HEADERS,
+          body: JSON.stringify({ ...payment, status: internalStatus, paid_at: paidAt }),
+        };
+      }
 
-      await supabase.from('payments').update(updateData).eq('id', payment.id);
-
+      await sql`UPDATE payments SET status = ${internalStatus} WHERE id = ${payment.id}`;
       return {
         statusCode: 200,
         headers: CORS_HEADERS,
-        body: JSON.stringify({ ...payment, status: internalStatus, paid_at: updateData.paid_at ?? payment.paid_at }),
+        body: JSON.stringify({ ...payment, status: internalStatus }),
       };
     }
 
