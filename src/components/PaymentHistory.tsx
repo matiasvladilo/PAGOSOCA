@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import Icon from './Icon';
 import type { HistoryPayment, Branch, PaymentStatus } from '../types';
 
 const BRANCHES: Branch[] = ['PV', 'La Reina', 'PT', 'Bilbao'];
@@ -12,19 +13,19 @@ function formatCLP(amount: number): string {
 }
 
 const STATUS_LABELS: Record<PaymentStatus, string> = {
-  pending:   '⏳ Pendiente',
-  paid:      '✅ Pagado',
-  failed:    '❌ Fallido',
-  expired:   '⏱ Expirado',
-  cancelled: '🚫 Cancelado',
+  pending:   'Pendiente',
+  paid:      'Pagado',
+  failed:    'Fallido',
+  expired:   'Expirado',
+  cancelled: 'Cancelado',
 };
 
-const STATUS_CLASS: Record<PaymentStatus, string> = {
-  pending:   'badge-pending',
-  paid:      'badge-paid',
-  failed:    'badge-failed',
-  expired:   'badge-expired',
-  cancelled: 'badge-expired',
+const STATUS_VARIANT: Record<PaymentStatus, string> = {
+  pending:   'pending',
+  paid:      'paid',
+  failed:    'failed',
+  expired:   'neutral',
+  cancelled: 'neutral',
 };
 
 export default function PaymentHistory() {
@@ -55,17 +56,27 @@ export default function PaymentHistory() {
   });
 
   if (loading) {
-    return <p className="history-loading">Cargando historial...</p>;
+    return <p className="history-state">Cargando historial…</p>;
   }
 
   return (
     <div>
       <div className="history-filters">
-        <select value={branchFilter} onChange={(e) => setBranchFilter(e.target.value)}>
+        <select
+          className="select"
+          aria-label="Filtrar por sucursal"
+          value={branchFilter}
+          onChange={(e) => setBranchFilter(e.target.value)}
+        >
           <option value="all">Todas las sucursales</option>
           {BRANCHES.map((b) => <option key={b} value={b}>{b}</option>)}
         </select>
-        <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
+        <select
+          className="select"
+          aria-label="Filtrar por estado"
+          value={statusFilter}
+          onChange={(e) => setStatusFilter(e.target.value)}
+        >
           <option value="all">Todos los estados</option>
           <option value="pending">Pendiente</option>
           <option value="paid">Pagado</option>
@@ -73,18 +84,22 @@ export default function PaymentHistory() {
           <option value="expired">Expirado</option>
           <option value="cancelled">Cancelado</option>
         </select>
-        <button className="btn-refresh" onClick={fetchPayments}>🔄</button>
+        <button className="btn-icon" aria-label="Actualizar historial" onClick={fetchPayments}>
+          <Icon name="refresh" size={16} />
+        </button>
       </div>
 
       {filtered.length === 0 ? (
-        <p className="history-empty">No hay pagos registrados hoy.</p>
+        <p className="history-state">No hay pagos registrados hoy.</p>
       ) : (
         <div className="history-list">
           {filtered.map((p) => (
-            <div key={p.id} className={`payment-card payment-card--${p.status}`}>
+            <div key={p.id} className="payment-card">
               <div className="payment-card-header">
                 <span className="payment-card-meta">{formatTime(p.created_at)} · {p.branch}</span>
-                <span className={STATUS_CLASS[p.status]}>{STATUS_LABELS[p.status]}</span>
+                <span className={`badge badge--${STATUS_VARIANT[p.status]}`}>
+                  {STATUS_LABELS[p.status]}
+                </span>
               </div>
               <div className="payment-card-amounts">
                 <div className="payment-card-total">{formatCLP(p.amount_charged)}</div>

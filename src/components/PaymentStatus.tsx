@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { QRCodeSVG } from 'qrcode.react';
+import Icon from './Icon';
 import type { Payment, PaymentStatus as Status } from '../types';
 
 interface Props {
@@ -71,23 +72,33 @@ export default function PaymentStatus({ payment, onComplete }: Props) {
 
   return (
     <div className="status-card">
+      <div className="status-amount">
+        <span className="status-amount-label">Total a cobrar</span>
+        <span className="status-amount-value">
+          ${payment.amount_charged.toLocaleString('es-CL')}
+        </span>
+      </div>
+
       <div className="qr-container">
         <QRCodeSVG value={payment.payment_url} size={220} />
       </div>
 
       <div className="payment-link-row">
         <button className="payment-link" onClick={handleCopy}>
-          {copied ? '✓ Link copiado' : payment.payment_url}
+          <Icon name="copy" size={13} />
+          {copied ? 'Link copiado' : payment.payment_url}
         </button>
         <p className="copy-hint">Toca para copiar el link</p>
       </div>
 
       <div className="status-waiting">
-        ⚠️ Esperando pago... No entregar todavía.
+        <Icon name="clock" size={16} />
+        Esperando pago — no entregar todavía
       </div>
 
       <button className="btn-secondary" onClick={handleRefresh} disabled={refreshing}>
-        {refreshing ? 'Consultando...' : 'Revisar estado del pago'}
+        <Icon name="refresh" size={14} />
+        {refreshing ? 'Consultando…' : 'Revisar estado del pago'}
       </button>
     </div>
   );

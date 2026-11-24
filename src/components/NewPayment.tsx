@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { calculateKhipuGrossAmount, calculateCustomerFee } from '../utils/fee';
 import PaymentStatus from './PaymentStatus';
+import Icon from './Icon';
 import type { Branch, Payment, PaymentStatus as Status } from '../types';
 
 const BRANCHES: Branch[] = ['PV', 'La Reina', 'PT', 'Bilbao'];
@@ -68,20 +69,26 @@ export default function NewPayment() {
   if (phase === 'result') {
     if (finalStatus === 'paid') {
       return (
-        <div className="status-paid">
-          <h2>✅ PAGO APROBADO</h2>
+        <div className="result result--paid">
+          <div className="result-icon">
+            <Icon name="check" size={32} />
+          </div>
+          <h2>Pago aprobado</h2>
           <p>Puedes entregar el producto.</p>
-          <button className="btn-primary" style={{ marginTop: '1.5rem' }} onClick={handleReset}>
+          <button className="btn-primary" onClick={handleReset}>
             Nuevo cobro
           </button>
         </div>
       );
     }
     return (
-      <div className="status-failed">
-        <h2>❌ Pago no confirmado</h2>
-        <p>No entregar producto.</p>
-        <button className="btn-primary" style={{ marginTop: '1.5rem' }} onClick={handleReset}>
+      <div className="result result--failed">
+        <div className="result-icon">
+          <Icon name="x" size={32} />
+        </div>
+        <h2>Pago no confirmado</h2>
+        <p>No entregar el producto.</p>
+        <button className="btn-primary" onClick={handleReset}>
           Generar nuevo cobro
         </button>
       </div>
@@ -90,9 +97,22 @@ export default function NewPayment() {
 
   return (
     <div>
+      <div className="notice">
+        <Icon name="alert" size={16} />
+        <span>
+          <strong>Entrega solo con el pago aprobado.</strong> El comprobante del cliente no es
+          confirmación.
+        </span>
+      </div>
+
       <div className="form-group">
         <label htmlFor="branch">Sucursal</label>
-        <select id="branch" className="select-branch" value={branch} onChange={(e) => setBranch(e.target.value as Branch)}>
+        <select
+          id="branch"
+          className="select select-branch"
+          value={branch}
+          onChange={(e) => setBranch(e.target.value as Branch)}
+        >
           {BRANCHES.map((b) => (
             <option key={b} value={b}>{b}</option>
           ))}
@@ -132,14 +152,20 @@ export default function NewPayment() {
         </div>
       )}
 
-      {error && <p className="error-msg">{error}</p>}
+      {error && (
+        <div className="error-msg" role="alert">
+          <Icon name="alert" size={16} />
+          <span>{error}</span>
+        </div>
+      )}
 
       <button
         className="btn-primary"
         onClick={handleGenerate}
         disabled={loading || saleAmount <= 0}
       >
-        {loading ? 'Generando...' : 'Generar QR de pago'}
+        {loading ? 'Generando…' : 'Generar QR de pago'}
+        {!loading && <Icon name="arrow-right" size={16} />}
       </button>
     </div>
   );
