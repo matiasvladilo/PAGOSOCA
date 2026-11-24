@@ -8,6 +8,6 @@
 
 [dev]
   command = "npm run dev"
-  port = 8888
+  port = 9001
   targetPort = 5173
   functions = "netlify/functions"
