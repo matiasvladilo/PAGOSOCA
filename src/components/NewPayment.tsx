@@ -6,8 +6,16 @@ import type { Branch, Payment, PaymentStatus as Status } from '../types';
 
 const BRANCHES: Branch[] = ['PV', 'La Reina', 'PT', 'Bilbao'];
 
+const SIN_CONEXION = 'Sin conexión. Revisa el wifi del local y volvé a intentar.';
+
 function formatCLP(amount: number): string {
   return amount > 0 ? `$${amount.toLocaleString('es-CL')}` : '—';
+}
+
+/** fetch tira TypeError cuando no hay red; el resto son errores de la API. */
+function errorMessage(err: unknown): string {
+  if (err instanceof TypeError || !navigator.onLine) return SIN_CONEXION;
+  return err instanceof Error ? err.message : 'Error al generar el cobro';
 }
 
 type Phase = 'form' | 'waiting' | 'result';
@@ -43,7 +51,7 @@ export default function NewPayment() {
       setPayment(data as Payment);
       setPhase('waiting');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Error al generar el cobro');
+      setError(errorMessage(err));
     } finally {
       setLoading(false);
     }

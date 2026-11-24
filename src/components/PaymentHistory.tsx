@@ -31,6 +31,7 @@ const STATUS_VARIANT: Record<PaymentStatus, string> = {
 export default function PaymentHistory() {
   const [payments, setPayments] = useState<HistoryPayment[]>([]);
   const [loading, setLoading] = useState(true);
+  const [failed, setFailed] = useState(false);
   const [branchFilter, setBranchFilter] = useState('all');
   const [statusFilter, setStatusFilter] = useState('all');
 
@@ -42,8 +43,10 @@ export default function PaymentHistory() {
       const res = await fetch('/.netlify/functions/list-payments');
       if (!res.ok) throw new Error();
       setPayments(await res.json() as HistoryPayment[]);
+      setFailed(false);
     } catch {
-      setPayments([]);
+      // No vaciar la lista: un historial en blanco se lee como "no hubo cobros".
+      setFailed(true);
     } finally {
       setLoading(false);
     }
@@ -89,7 +92,16 @@ export default function PaymentHistory() {
         </button>
       </div>
 
-      {filtered.length === 0 ? (
+      {failed && (
+        <div className="error-msg" role="alert">
+          <Icon name="alert" size={16} />
+          <span>
+            No se pudo cargar el historial. Revisa la conexión y tocá actualizar.
+          </span>
+        </div>
+      )}
+
+      {filtered.length === 0 && !failed ? (
         <p className="history-state">No hay pagos registrados hoy.</p>
       ) : (
         <div className="history-list">
